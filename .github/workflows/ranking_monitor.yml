@@ -2,9 +2,8 @@ name: 14-Day Ranking Monitor
 
 on:
   schedule:
-    # Every 14 days on Monday at 10am IST (4:30am UTC)
     - cron: '30 4 1,15 * *'
-  workflow_dispatch: # allows manual trigger
+  workflow_dispatch:
 
 jobs:
   check-rankings-and-rewrite:
@@ -12,18 +11,18 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Create config directory
-        run: mkdir -p config outputs
+      - name: Create required directories
+        run: mkdir -p config outputs outputs/csv
 
       - name: Write Google credentials
         run: echo '${{ secrets.GOOGLE_CREDENTIALS }}' > config/google_credentials.json
@@ -46,6 +45,9 @@ jobs:
 
       - name: Restore published articles data
         run: echo '${{ secrets.PUBLISHED_ARTICLES }}' > outputs/published_articles.json
+
+      - name: Restore rankings data
+        run: echo '${{ secrets.RANKINGS_DATA }}' > outputs/rankings.json
 
       - name: Check rankings
         run: python pipeline/phase5_rankings/check_rankings.py

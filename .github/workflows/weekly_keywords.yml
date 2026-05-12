@@ -2,9 +2,8 @@ name: Weekly Keyword Intelligence
 
 on:
   schedule:
-    # Every Monday at 9am IST (3:30am UTC)
     - cron: '30 3 * * 1'
-  workflow_dispatch: # allows manual trigger
+  workflow_dispatch:
 
 jobs:
   run-keyword-pipeline:
@@ -12,18 +11,18 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Create config directory
-        run: mkdir -p config
+      - name: Create required directories
+        run: mkdir -p config outputs outputs/csv
 
       - name: Write Google credentials
         run: echo '${{ secrets.GOOGLE_CREDENTIALS }}' > config/google_credentials.json
@@ -46,6 +45,9 @@ jobs:
 
       - name: Run keyword fetch
         run: python pipeline/phase1_keywords/fetch_keywords.py
+
+      - name: Run mock keywords fallback
+        run: python pipeline/phase1_keywords/create_mock_keywords.py
 
       - name: Run keyword classifier
         run: python pipeline/phase1_keywords/classify_keywords.py
