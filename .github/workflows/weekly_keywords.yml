@@ -1,0 +1,54 @@
+name: Weekly Keyword Intelligence
+
+on:
+  schedule:
+    # Every Monday at 9am IST (3:30am UTC)
+    - cron: '30 3 * * 1'
+  workflow_dispatch: # allows manual trigger
+
+jobs:
+  run-keyword-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create config directory
+        run: mkdir -p config
+
+      - name: Write Google credentials
+        run: echo '${{ secrets.GOOGLE_CREDENTIALS }}' > config/google_credentials.json
+
+      - name: Write Google token
+        run: echo '${{ secrets.GOOGLE_TOKEN }}' > config/token.json
+
+      - name: Write .env file
+        run: |
+          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
+          echo "SERP_API_KEY=${{ secrets.SERP_API_KEY }}" >> .env
+          echo "WP_ACCESS_TOKEN=${{ secrets.WP_ACCESS_TOKEN }}" >> .env
+          echo "WP_CLIENT_ID=${{ secrets.WP_CLIENT_ID }}" >> .env
+          echo "WP_CLIENT_SECRET=${{ secrets.WP_CLIENT_SECRET }}" >> .env
+          echo "WP_USERNAME=${{ secrets.WP_USERNAME }}" >> .env
+          echo "WP_PASSWORD=${{ secrets.WP_PASSWORD }}" >> .env
+          echo "WP_SITE_URL=${{ secrets.WP_SITE_URL }}" >> .env
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env
+
+      - name: Run keyword fetch
+        run: python pipeline/phase1_keywords/fetch_keywords.py
+
+      - name: Run keyword classifier
+        run: python pipeline/phase1_keywords/classify_keywords.py
+
+      - name: Push data to Supabase
+        run: python pipeline/phase6_dashboard/push_to_supabase.py
