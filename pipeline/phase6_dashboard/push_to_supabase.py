@@ -72,73 +72,81 @@ print(f"     ✅ Keywords pushed: {success} | Failed: {failed}")
 # ─────────────────────────────────────────
 print("\n  📝 Pushing articles...")
 
-with open("outputs/published_articles.json", "r") as f:
-    published_data = json.load(f)
+if not os.path.exists("outputs/published_articles.json"):
+    print("     ⚠️  published_articles.json not found — skipping")
+else:
+    with open("outputs/published_articles.json", "r") as f:
+        published_data = json.load(f)
 
-article_rows = []
-for article in published_data["published"]:
-    article_rows.append({
-        "keyword": article["keyword"],
-        "title": article["title"],
-        "url": article["url"],
-        "post_id": str(article["post_id"]),
-        "word_count": int(article.get("word_count", 0)),
-        "readability_score": float(article.get("readability_score", 0)),
-        "status": "published",
-        "published_at": article["published_at"]
-    })
+    article_rows = []
+    for article in published_data["published"]:
+        article_rows.append({
+            "keyword": article["keyword"],
+            "title": article["title"],
+            "url": article["url"],
+            "post_id": str(article["post_id"]),
+            "word_count": int(article.get("word_count", 0)),
+            "readability_score": float(article.get("readability_score", 0)),
+            "status": "published",
+            "published_at": article["published_at"]
+        })
 
-success, failed = push_to_table("articles", article_rows)
-print(f"     ✅ Articles pushed: {success} | Failed: {failed}")
-
+    success, failed = push_to_table("articles", article_rows)
+    print(f"     ✅ Articles pushed: {success} | Failed: {failed}")
 # ─────────────────────────────────────────
 # 3. PUSH RANKINGS
 # ─────────────────────────────────────────
 print("\n  📈 Pushing rankings...")
 
-with open("outputs/rankings.json", "r") as f:
-    rankings_data = json.load(f)
+if not os.path.exists("outputs/rankings.json"):
+    print("     ⚠️  rankings.json not found — skipping")
+else:
+    with open("outputs/rankings.json", "r") as f:
+        rankings_data = json.load(f)
 
-ranking_rows = []
-for result in rankings_data["results"]:
-    ranking = result.get("ranking", {})
-    ranking_rows.append({
-        "keyword": result["keyword"],
-        "url": result["url"],
-        "position": float(ranking.get("position", 0)),
-        "clicks": int(ranking.get("clicks", 0)),
-        "impressions": int(ranking.get("impressions", 0)),
-        "ctr": float(ranking.get("ctr", 0)),
-        "status": result["status"],
-        "action_needed": result["action_needed"],
-        "checked_at": result["checked_at"]
-    })
+    ranking_rows = []
+    for result in rankings_data["results"]:
+        ranking = result.get("ranking", {})
+        ranking_rows.append({
+            "keyword": result["keyword"],
+            "url": result["url"],
+            "position": float(ranking.get("position", 0)),
+            "clicks": int(ranking.get("clicks", 0)),
+            "impressions": int(ranking.get("impressions", 0)),
+            "ctr": float(ranking.get("ctr", 0)),
+            "status": result["status"],
+            "action_needed": result["action_needed"],
+            "checked_at": result["checked_at"]
+        })
 
-success, failed = push_to_table("rankings", ranking_rows)
-print(f"     ✅ Rankings pushed: {success} | Failed: {failed}")
+    success, failed = push_to_table("rankings", ranking_rows)
+    print(f"     ✅ Rankings pushed: {success} | Failed: {failed}")
 
 # ─────────────────────────────────────────
 # 4. PUSH REWRITES
 # ─────────────────────────────────────────
 print("\n  🔄 Pushing rewrite log...")
 
-with open("outputs/rewrite_log.json", "r") as f:
-    rewrite_data = json.load(f)
+if not os.path.exists("outputs/rewrite_log.json"):
+    print("     ⚠️  rewrite_log.json not found — skipping")
+else:
+    with open("outputs/rewrite_log.json", "r") as f:
+        rewrite_data = json.load(f)
 
-rewrite_rows = []
-for entry in rewrite_data["log"]:
-    rewrite_rows.append({
-        "keyword": entry["keyword"],
-        "rewrite_type": entry["rewrite_type"],
-        "post_id": str(entry.get("post_id", "")),
-        "updated_url": entry.get("updated_url", ""),
-        "word_count": int(entry.get("word_count", 0)),
-        "status": entry["status"],
-        "rewritten_at": entry["rewritten_at"]
-    })
+    rewrite_rows = []
+    for entry in rewrite_data["log"]:
+        rewrite_rows.append({
+            "keyword": entry["keyword"],
+            "rewrite_type": entry["rewrite_type"],
+            "post_id": str(entry.get("post_id", "")),
+            "updated_url": entry.get("updated_url", ""),
+            "word_count": int(entry.get("word_count", 0)),
+            "status": entry["status"],
+            "rewritten_at": entry["rewritten_at"]
+        })
 
-success, failed = push_to_table("rewrites", rewrite_rows)
-print(f"     ✅ Rewrites pushed: {success} | Failed: {failed}")
+    success, failed = push_to_table("rewrites", rewrite_rows)
+    print(f"     ✅ Rewrites pushed: {success} | Failed: {failed}")
 
 # ─────────────────────────────────────────
 # SUMMARY
