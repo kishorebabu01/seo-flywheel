@@ -19,9 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install groq==0.9.0 httpx==0.27.0 --upgrade --force-reinstall
+        run: pip install -r requirements.txt
 
       - name: Create required directories
         run: mkdir -p config outputs outputs/csv
@@ -45,11 +43,11 @@ jobs:
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
           echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env
 
-      - name: Restore published articles data
-        run: echo '${{ secrets.PUBLISHED_ARTICLES }}' > outputs/published_articles.json
-
-      - name: Restore rankings data
-        run: echo '${{ secrets.RANKINGS_DATA }}' > outputs/rankings.json
+      - name: Restore pipeline data files
+        run: |
+          echo '${{ secrets.PUBLISHED_ARTICLES }}' > outputs/published_articles.json
+          echo '${{ secrets.RANKINGS_DATA }}' > outputs/rankings.json
+          echo '${{ secrets.CLASSIFIED_KEYWORDS }}' > outputs/classified_keywords.json
 
       - name: Check rankings
         run: python pipeline/phase5_rankings/check_rankings.py
