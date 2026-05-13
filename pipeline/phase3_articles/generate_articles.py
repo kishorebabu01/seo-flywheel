@@ -2,13 +2,11 @@ import json
 import os
 from datetime import datetime
 from dotenv import load_dotenv
-from groq import Groq
+import requests as req
 
-# Load environment variables
 load_dotenv()
 
-# --- Setup ---
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 input_path = "outputs/content_briefs.json"
 output_path = "outputs/generated_articles.json"
@@ -79,29 +77,36 @@ def generate_article(brief):
 
     prompt = build_prompt(brief)
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are an expert SEO content writer with 10 years "
-                    "of experience writing high-ranking articles for "
-                    "digital marketing, SaaS, and growth marketing topics. "
-                    "You write in a clear, authoritative, and engaging style "
-                    "that both Google and human readers love."
-                )
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0.7,
-        max_tokens=3000
+    response = req.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an expert SEO content writer with 10 years "
+                        "of experience writing high-ranking articles for "
+                        "digital marketing, SaaS, and growth marketing topics. "
+                        "You write in a clear, authoritative, and engaging style "
+                        "that both Google and human readers love."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "temperature": 0.7,
+            "max_tokens": 3000
+        }
     )
 
-    article_content = response.choices[0].message.content
+    article_content = response.json()["choices"][0]["message"]["content"]
     word_count = len(article_content.split())
 
     print(f"     ✅ Article written — {word_count} words")

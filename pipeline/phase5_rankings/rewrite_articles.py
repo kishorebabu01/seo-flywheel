@@ -4,12 +4,11 @@ import requests
 import re
 from datetime import datetime
 from dotenv import load_dotenv
-from groq import Groq
+import requests as req
 
 load_dotenv()
 
-# --- Setup ---
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 WP_ACCESS_TOKEN = os.getenv("WP_ACCESS_TOKEN")
 WP_API = "https://public-api.wordpress.com/wp/v2/sites/keyshowrtheprime.wordpress.com"
 
@@ -150,29 +149,36 @@ def rewrite_article(keyword, rewrite_type):
 
     print(f"     🤖 Calling LLaMA 3.3 70B for {rewrite_type} rewrite...")
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are a world-class SEO content writer in 2026. "
-                    "You write articles that rank on page 1 of Google. "
-                    "Your writing is clear, authoritative, and packed with "
-                    "actionable advice. You always write for humans first, "
-                    "search engines second."
-                )
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0.8,
-        max_tokens=3000
+    response = req.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a world-class SEO content writer in 2026. "
+                        "You write articles that rank on page 1 of Google. "
+                        "Your writing is clear, authoritative, and packed with "
+                        "actionable advice. You always write for humans first, "
+                        "search engines second."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "temperature": 0.8,
+            "max_tokens": 3000
+        }
     )
 
-    new_content = response.choices[0].message.content
+    new_content = response.json()["choices"][0]["message"]["content"]
     word_count = len(new_content.split())
     print(f"     ✅ Rewrite complete — {word_count} words")
 
